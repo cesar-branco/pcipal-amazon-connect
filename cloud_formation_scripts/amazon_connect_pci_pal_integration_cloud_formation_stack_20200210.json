@@ -206,9 +206,9 @@
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
                     "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
-					"arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-					"arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
-					
+                    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+                    "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+                    
                 ],
                 "Tags": [
                     {
@@ -261,8 +261,8 @@
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
                     "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
-					"arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-					"arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+                    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+                    "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
                 ],
                 "Tags": [
                     {
@@ -447,8 +447,8 @@
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
                     "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
-					"arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-					"arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+                    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+                    "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
                 ],
                 "Tags": [
                     {
