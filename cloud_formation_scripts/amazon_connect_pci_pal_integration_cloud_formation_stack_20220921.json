@@ -1,0 +1,529 @@
+Skip to Main Content
+
+Services
+Search for services, features, blogs, docs, and more
+[Alt+S]
+
+
+
+London
+
+cesar.branco@pcipal.com @ 8542-0303-3348
+
+CloudFormation
+Stacks
+Stack details
+Drifts
+StackSets
+Exports
+Designer
+Registry
+Public extensions
+Activated extensions
+Publisher
+Feedback
+CloudFormation
+Stacks
+amplify-webapp-pcipal-161225
+Stacks(1)
+
+Active
+View nested
+
+1
+
+amplify-webapp-pcipal-161225
+
+2022-09-20 12:26:38 UTC-0400
+CREATE_COMPLETE
+amplify-webapp-pcipal-161225
+Delete
+Update
+Stack actions
+Create stack
+
+Stack info
+
+Events
+
+Resources
+
+Outputs
+
+Parameters
+
+Template
+
+Change sets
+Template
+View in Designer
+
+View processed template
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS Serverless API that creates Agent name/PIN pairs on a DynamoDB table when the call is transferred to PCI Pal by Amazon Connect Contact Centre, so it can be delivered back to the same agent as the outgoing call loops back to the CC, by making another call to lambda to retrieve the agent name from Amazon DynamoDB.",
+  "Parameters": {
+    "WriteCapacity": {
+      "Type": "Number",
+      "Description": "Write capacity for the DynamoDB Agent table.",
+      "Default": "4",
+      "MinValue": 1
+    },
+    "ReadCapacity": {
+      "Type": "Number",
+      "Description": "Read capacity for the DynamoDB Agent table.",
+      "Default": "4",
+      "MinValue": 1
+    },
+    "AgentTableName": {
+      "Type": "String",
+      "Description": "Name of DynamoDB table used to store the Agent post. If left blank a new table will be created.",
+      "MinLength": "0"
+    },
+    "ShouldCreateTable": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Description": "If true then the DynamoDB Agents and PINs table will be created with the CloudFormation stack."
+    }
+  },
+  "Outputs": {
+    "AgentTable": {
+      "Value": {
+        "Fn::If": [
+          "CreateAgentTable",
+          {
+            "Ref": "AgentTable"
+          },
+          {
+            "Ref": "AgentTableName"
+          }
+        ]
+      }
+    }
+  },
+  "Resources": {
+    "ServerlessRestApiDeploymentaf87fe3282": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "Description": "RestApi deployment id: af87fe32828a1173b536f711daa29a9f3c431731",
+        "RestApiId": {
+          "Ref": "ServerlessRestApi"
+        },
+        "StageName": "Stage"
+      }
+    },
+    "AddAgent": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "amplify-webapp-pcipal-161225-deployment",
+          "S3Key": "AWS_agent_pin_for_amazon_connect_loop/GetAgent-CodeUri-Or-ImageUri-637992735909137282-637992735963122679.zip"
+        },
+        "Description": "Function to add a Agent and return an Agent with a new PIN",
+        "Handler": "AWS_agent_pin_for_amazon_connect_loop::AWS_agent_pin_for_amazon_connect_loop.Functions::AddAgentAsync",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "AddAgentRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore3.1",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "AgentTable": {
+              "Fn::If": [
+                "CreateAgentTable",
+                {
+                  "Ref": "AgentTable"
+                },
+                {
+                  "Ref": "AgentTableName"
+                }
+              ]
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "AgentTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Condition": "CreateAgentTable",
+      "Properties": {
+        "TableName": {
+          "Fn::If": [
+            "TableNameGenerated",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "Ref": "AgentTableName"
+            }
+          ]
+        },
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "PIN",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "PIN",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": {
+            "Ref": "ReadCapacity"
+          },
+          "WriteCapacityUnits": {
+            "Ref": "WriteCapacity"
+          }
+        }
+      }
+    },
+    "RemoveAgentPutResourcePermissionProd": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "RemoveAgent"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": [
+            "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/",
+            {
+              "__ApiId__": {
+                "Ref": "ServerlessRestApi"
+              },
+              "__Stage__": "*"
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessRestApiProdStage": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "DeploymentId": {
+          "Ref": "ServerlessRestApiDeploymentaf87fe3282"
+        },
+        "RestApiId": {
+          "Ref": "ServerlessRestApi"
+        },
+        "StageName": "Prod"
+      }
+    },
+    "AddAgentRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+          "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+        ],
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "AddAgentPutResourcePermissionProd": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "AddAgent"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": [
+            "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/PUT/",
+            {
+              "__ApiId__": {
+                "Ref": "ServerlessRestApi"
+              },
+              "__Stage__": "*"
+            }
+          ]
+        }
+      }
+    },
+    "RemoveAgentRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+          "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+        ],
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "RemoveAgent": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "amplify-webapp-pcipal-161225-deployment",
+          "S3Key": "AWS_agent_pin_for_amazon_connect_loop/GetAgent-CodeUri-Or-ImageUri-637992735909137282-637992735963122679.zip"
+        },
+        "Description": "Function to remove a Agent",
+        "Handler": "AWS_agent_pin_for_amazon_connect_loop::AWS_agent_pin_for_amazon_connect_loop.Functions::RemoveAgentAsync",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "RemoveAgentRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore3.1",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "AgentTable": {
+              "Fn::If": [
+                "CreateAgentTable",
+                {
+                  "Ref": "AgentTable"
+                },
+                {
+                  "Ref": "AgentTableName"
+                }
+              ]
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "GetAgentPutResourcePermissionProd": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "GetAgent"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": [
+            "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/*",
+            {
+              "__ApiId__": {
+                "Ref": "ServerlessRestApi"
+              },
+              "__Stage__": "*"
+            }
+          ]
+        }
+      }
+    },
+    "GetAgent": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "amplify-webapp-pcipal-161225-deployment",
+          "S3Key": "AWS_agent_pin_for_amazon_connect_loop/GetAgent-CodeUri-Or-ImageUri-637992735909137282-637992735963122679.zip"
+        },
+        "Description": "Function to get a single Agent",
+        "Handler": "AWS_agent_pin_for_amazon_connect_loop::AWS_agent_pin_for_amazon_connect_loop.Functions::GetAgentAsync",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "GetAgentRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore3.1",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "AgentTable": {
+              "Fn::If": [
+                "CreateAgentTable",
+                {
+                  "Ref": "AgentTable"
+                },
+                {
+                  "Ref": "AgentTableName"
+                }
+              ]
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "ServerlessRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Body": {
+          "info": {
+            "version": "1.0",
+            "title": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          "paths": {
+            "/": {
+              "put": {
+                "x-amazon-apigateway-integration": {
+                  "httpMethod": "POST",
+                  "type": "aws_proxy",
+                  "uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAgent.Arn}/invocations"
+                  }
+                },
+                "responses": {}
+              },
+              "delete": {
+                "x-amazon-apigateway-integration": {
+                  "httpMethod": "POST",
+                  "type": "aws_proxy",
+                  "uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RemoveAgent.Arn}/invocations"
+                  }
+                },
+                "responses": {}
+              }
+            },
+            "/{Id}": {
+              "get": {
+                "x-amazon-apigateway-integration": {
+                  "httpMethod": "POST",
+                  "type": "aws_proxy",
+                  "uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAgent.Arn}/invocations"
+                  }
+                },
+                "responses": {}
+              }
+            }
+          },
+          "swagger": "2.0"
+        }
+      }
+    },
+    "GetAgentRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+          "arn:aws:iam::aws:policy/AWSLambdaInvocation-DynamoDB"
+        ],
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    }
+  },
+  "Conditions": {
+    "CreateAgentTable": {
+      "Fn::Equals": [
+        {
+          "Ref": "ShouldCreateTable"
+        },
+        "true"
+      ]
+    },
+    "TableNameGenerated": {
+      "Fn::Equals": [
+        {
+          "Ref": "AgentTableName"
+        },
+        ""
+      ]
+    }
+  }
+}
+
+Feedback
+Looking for language selection? Find it in the new 
+Unified Settings
+© 2022, Amazon Web Services, Inc. or its affiliates.
+Privacy
+Terms
+Cookie preferences

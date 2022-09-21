@@ -1,0 +1,78 @@
+﻿<!--Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.-->
+<!--SPDX-License-Identifier: MIT-0-->
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="connect-streams-min.js"></script>
+</head>
+<body>
+        <div id="containerDiv"></div>
+        <script>
+            connect.core.initCCP(containerDiv, {
+                ccpUrl: 'https://pcipaldev.awsapps.com/connect/ccp-v2/',        /* <<<--- REQUIRED: replaced pcipaldev.awsapps.com with the customer's instance */
+                loginPopup: true,         /*optional, default TRUE*/
+                softphone: {              /*optional*/
+                    allowFramedSoftphone: true
+                }
+            });
+
+
+            connect.contact(function (contact) {
+
+                contact.onIncoming(function (contact) {
+                });
+
+                contact.onRefresh(function (contact) {
+                });
+
+                contact.onAccepted(function (contact) {
+                });
+
+                contact.onEnded(function () {
+                });
+
+                // https <region> . <platform> . cloud /session/ < tenant id > /launch/ < flowID > /linkcallexternal/ < value - from - external - linkheader > /
+                // https://euwest1.pcipaldev.cloud/session/1/launch/10/linkcallexternal/CA77f09ed6bb71c93737c31045ffad74b1/
+
+                contact.onConnected(function () {
+                    console.log(`onConnected(${contact.getContactId()})`);
+                    var attributeMap = contact.getAttributes();
+                    var region = JSON.stringify(attributeMap["region"]["value"]).trim().replace(/"/g,"");
+                    var platform = JSON.stringify(attributeMap["platform"]["value"]).trim().replace(/"/g, "");
+                    var flowId = JSON.stringify(attributeMap["flowId"]["value"]).trim().replace(/"/g, "");
+                    var tenantId = JSON.stringify(attributeMap["tenantId"]["value"]).trim().replace(/"/g, "");
+                    var callingNumber = JSON.stringify(attributeMap["callingNumber"]["value"]).trim().replace(/"/g, "");
+                    var calledNumber = JSON.stringify(attributeMap["calledNumber"]["value"]).trim().replace(/"/g, "");
+   
+                    var secureCall = "false";
+                    secureCall = JSON.stringify(attributeMap["secureCall"]["value"]).trim().replace(/"/g, "").toLowerCase();
+
+                    console.log(region);
+                    console.log(platform);
+                    console.log(flowId);
+                    console.log(tenantId);
+
+                    console.log(calledNumber);
+                    console.log(callingNumber);
+
+                    var link = document.getElementById("secureCallUrl");
+                    if (secureCall == "true")
+                    {
+                        var newUrl = "https://" + region + "." + platform + ".cloud/session/" + tenantId + "/launch/" + flowId + "/linkcallexternal/" + callingNumber.replace("+", "") + calledNumber.replace("+", "") + "/";
+                        link.style.visibility = "visible";
+                        link.setAttribute("href", newUrl);
+                        
+                        //window.alert("secure call url: " + newUrl);
+                    }
+                    else
+                    {
+                        link.style.visibility = "hidden";
+                        //window.alert("Customer's name: " + name + "\nCustomer's phone #: " + phone + "\nCustomer's account #: " + account);
+                    }
+
+                });
+            });
+        </script>
+        <a id="secureCallUrl" href="" target="_blank" style="visibility:hidden;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">open payment flow and link call>></a>
+</body>
+</html>
