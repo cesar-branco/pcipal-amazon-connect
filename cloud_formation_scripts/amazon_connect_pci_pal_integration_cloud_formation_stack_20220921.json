@@ -1,64 +1,3 @@
-Skip to Main Content
-
-Services
-Search for services, features, blogs, docs, and more
-[Alt+S]
-
-
-
-London
-
-cesar.branco@pcipal.com @ 8542-0303-3348
-
-CloudFormation
-Stacks
-Stack details
-Drifts
-StackSets
-Exports
-Designer
-Registry
-Public extensions
-Activated extensions
-Publisher
-Feedback
-CloudFormation
-Stacks
-amplify-webapp-pcipal-161225
-Stacks(1)
-
-Active
-View nested
-
-1
-
-amplify-webapp-pcipal-161225
-
-2022-09-20 12:26:38 UTC-0400
-CREATE_COMPLETE
-amplify-webapp-pcipal-161225
-Delete
-Update
-Stack actions
-Create stack
-
-Stack info
-
-Events
-
-Resources
-
-Outputs
-
-Parameters
-
-Template
-
-Change sets
-Template
-View in Designer
-
-View processed template
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS Serverless API that creates Agent name/PIN pairs on a DynamoDB table when the call is transferred to PCI Pal by Amazon Connect Contact Centre, so it can be delivered back to the same agent as the outgoing call loops back to the CC, by making another call to lambda to retrieve the agent name from Amazon DynamoDB.",
@@ -519,11 +458,3 @@ View processed template
     }
   }
 }
-
-Feedback
-Looking for language selection? Find it in the new 
-Unified Settings
-© 2022, Amazon Web Services, Inc. or its affiliates.
-Privacy
-Terms
-Cookie preferences
